@@ -152,7 +152,9 @@ int main()
 	unsigned int textureColourBuffer;
 	glGenTextures( 1, &textureColourBuffer );
 	glBindTexture( GL_TEXTURE_2D, textureColourBuffer );
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, WIDTH, HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL );
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, WIDTH, HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColourBuffer, 0 );
@@ -169,17 +171,21 @@ int main()
 
 	// Create a colour attachment texture.
 	unsigned int textureColourBufferOne;
-	glGenTextures(1, &textureColourBufferOne);
-	glBindTexture(GL_TEXTURE_2D, textureColourBufferOne);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, WIDTH, HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColourBufferOne, 0);
+	glGenTextures( 1, &textureColourBufferOne );
+	glBindTexture( GL_TEXTURE_2D, textureColourBufferOne);
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, WIDTH, HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColourBufferOne, 0 );
 
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	if ( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
 		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 
+	// We want to know if the frame we are rendering is even or odd.
+	bool even = true;
 
 	// Render Loop.
 	while( !glfwWindowShouldClose( window ) )
@@ -191,7 +197,7 @@ int main()
 		// Render.
 
 		// Bind to frameBuffer and draw scene as normally would to colour texture.
-		glBindFramebuffer( GL_FRAMEBUFFER, frameBufferOne );
+		glBindFramebuffer( GL_FRAMEBUFFER, even ? frameBuffer : frameBufferOne );
 
 		glClearColor( 0.2f, 0.3f, 0.1f, 1.0f );
 		glClear( GL_COLOR_BUFFER_BIT );
@@ -214,12 +220,12 @@ int main()
 		bufferShader.setVec2( "iMouse", xPos, yPos );
 
 		glBindVertexArray( VAO );
-		glBindTexture( GL_TEXTURE_2D, textureColourBufferOne );
+		glBindTexture( GL_TEXTURE_2D, even ? textureColourBufferOne : textureColourBuffer );
 		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
 		glBindVertexArray( 0 );
 
 		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-		glDisable( GL_DEPTH_TEST );
+		//glDisable( GL_DEPTH_TEST );
 
 		glClearColor( 1.0f, 1.0f, 1.0f, 1.0f );
 		glClear( GL_COLOR_BUFFER_BIT );
@@ -228,25 +234,27 @@ int main()
 		ourShader.setVec2( "iResolution", WIDTH, HEIGHT );
 		// Set the iTime uniform.
 		ourShader.setFloat( "iTime", timeValue );
-		glBindVertexArray(VAO);
-		glBindTexture( GL_TEXTURE_2D, textureColourBufferOne );
+		glBindVertexArray( VAO );
+		glBindTexture( GL_TEXTURE_2D, even ? textureColourBuffer : textureColourBufferOne );
 		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
+
+		glBeginTransformFeedback(GL_TRIANGLES);
 
 		glfwSwapBuffers( window );
 		glfwPollEvents();
+
+		even = !even;
 
 		frameCount++;
 		finalTime = time( NULL );
 		if( finalTime - initialTime > 0 )
 		{
 		
-			std::cout << "FPS : " << frameCount / (finalTime - initialTime) << std::endl;
+			std::cout << "FPS : " << frameCount / ( finalTime - initialTime ) << std::endl;
 			frameCount = 0;
 			initialTime = finalTime;
 
 		}
-
-
 	
 	}
 
