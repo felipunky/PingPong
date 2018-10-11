@@ -131,10 +131,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.glsl" />
-    <None Include="main.glsl" />
-    <None Include="paint.glsl" />
+    <None Include="Image.glsl" />
+    <None Include="BufferA.glsl" />
     <None Include="vertex.glsl" />
-    <None Include="waves.glsl" />
+    <None Include="BufferB.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Cassini-Projection-2.jpg" />

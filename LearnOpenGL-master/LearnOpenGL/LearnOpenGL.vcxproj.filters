@@ -37,13 +37,13 @@
     <None Include="vertex.glsl">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="waves.glsl">
+    <None Include="BufferA.glsl">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="paint.glsl">
+    <None Include="Image.glsl">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="main.glsl">
+    <None Include="BufferB.glsl">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>

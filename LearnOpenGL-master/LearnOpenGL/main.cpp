@@ -81,8 +81,9 @@ int main()
 	}
 
 	// We build and compile our shader program.
-	Shader ourShader( "vertex.glsl", "main.glsl" );
-	Shader bufferShader( "vertex.glsl", "paint.glsl" );
+	Shader Image( "vertex.glsl", "Image.glsl" );
+	Shader BufferA( "vertex.glsl", "BufferA.glsl" );
+	Shader BufferB( "vertex.glsl", "BufferB.glsl" );
 
 	// We define the points in space that we want to render.
 	float vertices[] =
@@ -137,12 +138,18 @@ int main()
 	// Load them textures.
 	//unsigned int tex = loadTexture( "Cassini-Projection-2.jpg" );
 	
-	bufferShader.use();
-	bufferShader.setInt("iChannel0", 0);
+	BufferA.use();
+	BufferA.setInt( "iChannel0", 0 );
+	BufferA.setInt( "iChannel1", 1 );
 
-	ourShader.use();
-	ourShader.setInt("iChannel0", 0);
+	BufferB.use();
+	BufferB.setInt( "iChannel0", 0 );
+	BufferB.setInt( "iChannel1", 1 );
 
+	Image.use();
+	Image.setInt( "iChannel0", 0 );
+
+	// BufferA Ping Pong FrameBuffers
 	// Framebuffer configuration.
 	unsigned int frameBuffer;
 	glGenFramebuffers( 1, &frameBuffer );
@@ -153,8 +160,8 @@ int main()
 	glGenTextures( 1, &textureColourBuffer );
 	glBindTexture( GL_TEXTURE_2D, textureColourBuffer );
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, WIDTH, HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER );
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColourBuffer, 0 );
@@ -174,8 +181,8 @@ int main()
 	glGenTextures( 1, &textureColourBufferOne );
 	glBindTexture( GL_TEXTURE_2D, textureColourBufferOne);
 	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, WIDTH, HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER );
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColourBufferOne, 0 );
@@ -183,6 +190,47 @@ int main()
 	if ( glCheckFramebufferStatus( GL_FRAMEBUFFER ) != GL_FRAMEBUFFER_COMPLETE )
 		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
 	glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+
+	// BufferB frameBuffer configurations.
+	// Framebuffer configuration.
+	unsigned int frameBufferTwo;
+	glGenFramebuffers(1, &frameBufferTwo);
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferTwo);
+
+	// Create a colour attachment texture.
+	unsigned int textureColourBufferTwo;
+	glGenTextures(1, &textureColourBufferTwo);
+	glBindTexture(GL_TEXTURE_2D, textureColourBufferTwo);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WIDTH, HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColourBufferTwo, 0);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	// Framebuffer configuration.
+	unsigned int frameBufferThree;
+	glGenFramebuffers(1, &frameBufferThree);
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferThree);
+
+	// Create a colour attachment texture.
+	unsigned int textureColourBufferThree;
+	glGenTextures(1, &textureColourBufferThree);
+	glBindTexture(GL_TEXTURE_2D, textureColourBufferThree);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WIDTH, HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColourBufferThree, 0);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// We want to know if the frame we are rendering is even or odd.
 	bool even = true;
@@ -202,22 +250,22 @@ int main()
 		glClearColor( 0.2f, 0.3f, 0.1f, 1.0f );
 		glClear( GL_COLOR_BUFFER_BIT );
 
-		bufferShader.use();
+		BufferA.use();
 		float currentFrame = glfwGetTime();
 		//Set the iTimeDelta uniform.
 		float deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-		bufferShader.setFloat( "iTimeDelta", deltaTime );
+		BufferA.setFloat( "iTimeDelta", deltaTime );
 		// Set the iTime uniform.
 		float timeValue = currentFrame;
-		bufferShader.setFloat( "iTime", timeValue );
+		BufferA.setFloat( "iTime", timeValue );
 		// Set the iResolution uniform.
-		bufferShader.setVec2( "iResolution", WIDTH, HEIGHT );
+		BufferA.setVec2( "iResolution", WIDTH, HEIGHT );
 		// Input iMouse.
 		double xPos, yPos;
 		glfwGetCursorPos( window, &xPos, &yPos );
 		yPos = HEIGHT - yPos;
-		bufferShader.setVec2( "iMouse", xPos, yPos );
+		BufferA.setVec2( "iMouse", xPos, yPos );
 
 		glBindVertexArray( VAO );
 		glBindTexture( GL_TEXTURE_2D, even ? textureColourBufferOne : textureColourBuffer );
@@ -225,20 +273,42 @@ int main()
 		glBindVertexArray( 0 );
 
 		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-		//glDisable( GL_DEPTH_TEST );
+
+		// BufferB
+		glBindFramebuffer(GL_FRAMEBUFFER, even ? frameBufferTwo : frameBufferThree);
+
+		glClearColor(0.2f, 0.3f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		BufferB.use();
+		//Set the iTimeDelta uniform.
+		BufferB.setFloat( "iTimeDelta", deltaTime );
+		// Set the iTime uniform.
+		BufferB.setFloat( "iTime", timeValue );
+		// Set the iResolution uniform.
+		BufferB.setVec2( "iResolution", WIDTH, HEIGHT );
+		// Input iMouse.
+		BufferB.setVec2( "iMouse", xPos, yPos );
+
+		glBindVertexArray( VAO );
+		glBindTexture( GL_TEXTURE_2D, even ? textureColourBufferThree : textureColourBufferTwo );
+		glBindTexture( GL_TEXTURE_2D, even ? textureColourBufferOne : textureColourBuffer );
+		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
+		glBindVertexArray( 0 );
+
+		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 
 		glClearColor( 1.0f, 1.0f, 1.0f, 1.0f );
 		glClear( GL_COLOR_BUFFER_BIT );
 
-		ourShader.use();
-		ourShader.setVec2( "iResolution", WIDTH, HEIGHT );
+		Image.use();
+		Image.setVec2( "iResolution", WIDTH, HEIGHT );
 		// Set the iTime uniform.
-		ourShader.setFloat( "iTime", timeValue );
+		Image.setFloat( "iTime", timeValue );
 		glBindVertexArray( VAO );
-		glBindTexture( GL_TEXTURE_2D, even ? textureColourBuffer : textureColourBufferOne );
+		glBindTexture( GL_TEXTURE_2D, even ? textureColourBufferOne : textureColourBuffer );
+		glBindTexture( GL_TEXTURE_2D, even ? textureColourBufferThree : textureColourBufferTwo );
 		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
-
-		glBeginTransformFeedback(GL_TRIANGLES);
 
 		glfwSwapBuffers( window );
 		glfwPollEvents();
