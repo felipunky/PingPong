@@ -1,0 +1,15 @@
+﻿  main.cpp
+c:\users\paula\downloads\learnopengl-master\learnopengl-master\learnopengl\shader.h(65): warning C4101: 'infoLog': unreferenced local variable
+c:\users\paula\downloads\learnopengl-master\learnopengl-master\learnopengl\shader.h(64): warning C4101: 'success': unreferenced local variable
+c:\users\paula\downloads\learnopengl-master\learnopengl-master\learnopengl\main.cpp(12): warning C4244: 'initializing': conversion from 'time_t' to 'int', possible loss of data
+c:\users\paula\downloads\learnopengl-master\learnopengl-master\learnopengl\main.cpp(311): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\paula\downloads\learnopengl-master\learnopengl-master\learnopengl\main.cpp(320): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\paula\downloads\learnopengl-master\learnopengl-master\learnopengl\main.cpp(325): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\paula\downloads\learnopengl-master\learnopengl-master\learnopengl\main.cpp(349): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\paula\downloads\learnopengl-master\learnopengl-master\learnopengl\main.cpp(351): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\paula\downloads\learnopengl-master\learnopengl-master\learnopengl\main.cpp(378): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\paula\downloads\learnopengl-master\learnopengl-master\learnopengl\main.cpp(380): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\users\paula\downloads\learnopengl-master\learnopengl-master\learnopengl\main.cpp(397): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+c:\users\paula\downloads\learnopengl-master\learnopengl-master\learnopengl\main.cpp(415): warning C4244: '=': conversion from 'time_t' to 'int', possible loss of data
+  LearnOpenGL.vcxproj -> C:\Users\Paula\Downloads\LearnOpenGL-master\LearnOpenGL-master\Debug\LearnOpenGL.exe
+  LearnOpenGL.vcxproj -> C:\Users\Paula\Downloads\LearnOpenGL-master\LearnOpenGL-master\Debug\LearnOpenGL.pdb (Partial PDB)
