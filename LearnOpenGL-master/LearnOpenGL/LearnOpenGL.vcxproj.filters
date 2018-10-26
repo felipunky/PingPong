@@ -31,9 +31,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="fragment.glsl">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="vertex.glsl">
       <Filter>Source Files</Filter>
     </None>
@@ -44,6 +41,15 @@
       <Filter>Source Files</Filter>
     </None>
     <None Include="BufferB.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="BufferC.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="BufferD.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="BufferDVertex.glsl">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>

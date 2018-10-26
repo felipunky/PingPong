@@ -130,7 +130,9 @@
     <ClInclude Include="stb_image.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="fragment.glsl" />
+    <None Include="BufferC.glsl" />
+    <None Include="BufferD.glsl" />
+    <None Include="BufferDVertex.glsl" />
     <None Include="Image.glsl" />
     <None Include="BufferA.glsl" />
     <None Include="vertex.glsl" />
