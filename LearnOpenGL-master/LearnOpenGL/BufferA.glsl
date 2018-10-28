@@ -18,7 +18,7 @@ const float alp = ( dx * dx ) / dt;
 const float rbe = 1.0 / ( 4.0 + alp );
 const float vo = 12.0;
 const int FIELD = 1;
-const float vf = 0.005;
+const float vf = 0.01;//0.005;
 const float mul = 20.0;
 const float e = 0.005;//1e-2;//0.005;
 const float pres = 0.01;
@@ -56,10 +56,10 @@ float cur( vec2 uv )
     float x = uv.x;
     float y = uv.y;
     
-    float top = texture( iChannel0, vec2( x, y + ypi ) ).r;
-    float lef = texture( iChannel0, vec2( x - xpi, y ) ).r;
-    float rig = texture( iChannel0, vec2( x + xpi, y ) ).r;
-    float dow = texture( iChannel0, vec2( x, y - ypi ) ).r;
+    float top = texture( iChannel1, vec2( x, y + ypi ) ).r;
+    float lef = texture( iChannel1, vec2( x - xpi, y ) ).r;
+    float rig = texture( iChannel1, vec2( x + xpi, y ) ).r;
+    float dow = texture( iChannel1, vec2( x, y - ypi ) ).r;
     
     float dY = ( top - dow ) * 0.5;
     float dX = ( rig - lef ) * 0.5;
@@ -145,8 +145,10 @@ void main()
     o = texture( iChannel0, uv ).a * 0.99;
 	fO += o;
 
-	if( iMouse.z > 0.5 && length( p - mou ) < siz * mul ) 
-	fld = 10.0 * vel;
+	float ra = siz * mul;
+
+	if( iMouse.z > 0.5 && length( p - mou ) < ra ) 
+	fld *= 20.0 * vel;
 
     if( uv.y < 0.00 || uv.x < 0.00 || uv.x > 1.0 || uv.y > 1.0 ) o *= 0.0;
     

@@ -176,7 +176,7 @@ vec4 forc( vec2 uv, vec2 p, vec2 mou, sampler2D tex, out float cen )
     */
 
     vec4 col = vec4( 0 ); //( di * rbe ) * ( top + lef + rig + dow + alp * cen ) * rbe;
-    
+    //col += 0.3 * vec4( fbm( p + 1.0 + iTime ), fbm( p + 0.5 + iTime ), fbm( p + 2.0 + iTime ), 1 );
     if( iMouse.z > 0.5 )
 	col += cir( p, mou, siz );
     
