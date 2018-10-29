@@ -241,7 +241,7 @@ vec4 fin( vec2 uv, vec2 p, vec2 mou, out float cen )
     vec4 col = vec4( 0.0 ); float dam = 1.0; vec4 colO = vec4( 0 ); vec2 pre = uv;
     
     uv = adv( uv );
-    uv -= dt * ( vel( uv ) * dif( uv ) );
+    uv -= dt * iTimeDelta * ( vel( uv ) * dif( uv ) );
     //uv += dt * ( vel( ( uv ) ) );
     col += forc( uv, p, mou, iChannel0, cen );
     colO = texture( iChannel0, uv ) + col; // * dt;// * 0.2;
