@@ -18,9 +18,9 @@ const float alp = ( dx * dx ) / dt;
 const float rbe = 1.0 / ( 4.0 + alp );
 const float vo = 12.0;
 const int FIELD = 1;
-const float vf = 0.01;//0.005;
+const float vf = 0.0005;//0.005;
 const float mul = 20.0;
-const float e = 0.005;//1e-2;//0.005;
+const float e = 1e-3;//0.005;//1e-2;//0.005;
 const float pres = 0.01;
 
 //2D Vector field visualizer by nmz (twitter: @stormoid)
@@ -86,7 +86,7 @@ vec2 vor( vec2 uv )
     
     if( length( dir ) > 0.0 )
     
-    uv -= dt * vo * cur( uv ) * dir;
+    uv -= dt * iTimeDelta * vo * cur( uv ) * dir;
     
     return uv;
     
@@ -142,16 +142,16 @@ void main()
     
     float o = 0.0;
     
-    o = texture( iChannel0, uv ).a * 0.99;
+    o = texture( iChannel0, uv ).a; // * 0.99;
 	fO += o;
 
 	float ra = siz * mul;
 
 	if( iMouse.z > 0.5 && length( p - mou ) < ra ) 
-	fld *= 20.0 * vel;
+	fld = 10.0 * vel;
 
     if( uv.y < 0.00 || uv.x < 0.00 || uv.x > 1.0 || uv.y > 1.0 ) o *= 0.0;
     
-    fragColor = vec4( 0, fld, fO );
+    fragColor = vec4( col.r, fld, fO );
     
 }
