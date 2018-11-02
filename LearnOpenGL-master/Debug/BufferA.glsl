@@ -12,15 +12,15 @@ uniform sampler2D iChannel1;
 const float dx = 0.5;
 const float dt = dx * dx * 0.5;
 const int ITER = 1;
-const float siz = 0.05;
+const float siz = 0.2;
 const float di = 0.5;
 const float alp = ( dx * dx ) / dt;
 const float rbe = 1.0 / ( 4.0 + alp );
 const float vo = 12.0;
 const int FIELD = 1;
-const float vf = 0.005;
+const float vf = 0.005;//0.005;
 const float mul = 20.0;
-const float e = 0.005;//1e-2;//0.005;
+const float e = 0.0025;//1e-3;//0.005;//1e-2;//0.005;
 const float pres = 0.01;
 
 //2D Vector field visualizer by nmz (twitter: @stormoid)
@@ -28,10 +28,8 @@ const float pres = 0.01;
 /*
 	There is already a shader here on shadertoy for 2d vector field viz, 
 	but I found it to be hard to use so I decided to write my own.
-
 	Heavily modified by me to make it work as an interactive vector field 
 	for my fluid sim.
-
 */
 
 const float arrow_density = 0.2;
@@ -56,10 +54,10 @@ float cur( vec2 uv )
     float x = uv.x;
     float y = uv.y;
     
-    float top = texture( iChannel0, vec2( x, y + ypi ) ).r;
-    float lef = texture( iChannel0, vec2( x - xpi, y ) ).r;
-    float rig = texture( iChannel0, vec2( x + xpi, y ) ).r;
-    float dow = texture( iChannel0, vec2( x, y - ypi ) ).r;
+    float top = texture( iChannel1, vec2( x, y + ypi ) ).r;
+    float lef = texture( iChannel1, vec2( x - xpi, y ) ).r;
+    float rig = texture( iChannel1, vec2( x + xpi, y ) ).r;
+    float dow = texture( iChannel1, vec2( x, y - ypi ) ).r;
     
     float dY = ( top - dow ) * 0.5;
     float dX = ( rig - lef ) * 0.5;
@@ -86,7 +84,7 @@ vec2 vor( vec2 uv )
     
     if( length( dir ) > 0.0 )
     
-    uv -= dt * vo * cur( uv ) * dir;
+    uv -= dt * iTimeDelta * vo * cur( uv ) * dir;
     
     return uv;
     
@@ -145,11 +143,13 @@ void main()
     o = texture( iChannel0, uv ).a * 0.99;
 	fO += o;
 
-	if( iMouse.z > 0.5 && length( p - mou ) < siz * mul ) 
-	fld = 10.0 * vel;
+	float ra = siz * mul;
+
+	if( iMouse.z > 0.5 && length( p - mou ) < ra && fO > 10.0 ) 
+	fld = 3.0 * vel;
 
     if( uv.y < 0.00 || uv.x < 0.00 || uv.x > 1.0 || uv.y > 1.0 ) o *= 0.0;
     
-    fragColor = vec4( 0, fld, fO );
+    fragColor = vec4( col.r, fld, fO );
     
 }

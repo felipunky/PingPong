@@ -12,13 +12,13 @@ uniform sampler2D iChannel1;
 const float dx = 0.5;
 const float dt = dx * dx * 0.5;
 const int ITER = 1;
-const float siz = 0.05;
-const float di = 0.5;
+const float siz = 0.2;
+const float di = 0.25;
 const float alp = ( dx * dx ) / dt;
 const float rbe = 1.0 / ( 4.0 + alp );
 const float vo = 12.0;
 const int FIELD = 1;
-const float vf = 0.005;
+const float vf = 0.01;//0.005;
 const float mul = 20.0;
 const float e = 1e-2;//0.005;
 const float pres = 0.01;
@@ -161,7 +161,6 @@ float cir( vec2 uv, vec2 mou, float r )
 vec4 forc( vec2 uv, vec2 p, vec2 mou, sampler2D tex, out float cen )
 {
 
-	/*
     float xpi = 1.0 / iResolution.x;
     float ypi = 1.0 / iResolution.y;
     
@@ -173,14 +172,13 @@ vec4 forc( vec2 uv, vec2 p, vec2 mou, sampler2D tex, out float cen )
     vec4 lef = texture( iChannel1, vec2( x - xpi, y ) );
     vec4 rig = texture( iChannel1, vec2( x + xpi, y ) );
     vec4 dow = texture( iChannel1, vec2( x, y - ypi ) );
-    */
 
     vec4 col = vec4( 0 ); //( di * rbe ) * ( top + lef + rig + dow + alp * cen ) * rbe;
     //if( iFrame < 10 )
     //col += cos( p.y * 100.0 );
     //col += 0.3 * vec4( fbm( p + 1.0 ), fbm( p + 0.5 ), fbm( p + 2.0 ), 1 );
     if( iMouse.z > 0.5 )
-	col += cir( p, mou, siz );
+	col += 0.1 * cir( p, mou, siz );
     
     //col += ( di * rbe ) * ( top + lef + rig + dow + alp * cen ) * rbe;
     //if( iFrame <= 10 )
@@ -266,7 +264,7 @@ void main( )
     
     float cen = 0.0;
     
-    vec4 colO = vec4( 1.0, 0.99, 0.99, 1 ) * fin( uv, p, mou, cen );
+    vec4 colO = fin( uv, p, mou, cen );
     
     fragColor = colO;
     

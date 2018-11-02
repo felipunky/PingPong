@@ -46,15 +46,20 @@ void main( )
     
     float fac = -( cen.a - 0.5 ) * 2.0 + ( top + lef + rig + dow - 2.0 );
     
+	float tex = texture( iChannel1, uv ).r;
+	float texO = texture( iChannel1, uv ).g;
+
     tot += fac;
     //if( iMouse.z > 0.5 )
     //tot += dist; // mouse
-    tot += texture( iChannel1, uv ).x;
+    tot += tex;
     tot *= 0.98; // damping
     tot *= step(0.1, iTime); // hacky way of clearing the buffer
     tot = 0.5 + tot * 0.5;
     tot = clamp(tot, 0., 1.);
     
-    fragColor = vec4( vec3( tot ), cen.r );
+	fragColor = vec4( mix( vec3( tot, 0.1, 0.4 ), vec3( 0.2, tex, tot ), tex ), cen.r );
+
+    //fragColor = vec4( vec3( tot ), cen.r );
 
 }
