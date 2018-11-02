@@ -7,6 +7,7 @@ uniform vec2 iMouse;
 uniform sampler2D iChannel0;
 uniform sampler2D iChannel1;
 uniform sampler2D iChannel2;
+uniform sampler2D iChannel3;
 
 void main()
 {
@@ -15,6 +16,8 @@ void main()
 
 	fragColor = texture( iChannel1, uv ) * vec4( 0.5, 0.2, 2.0, 1.0 );
 	fragColor += 0.5 * texture( iChannel2, uv );
+	fragColor += texture( iChannel3, uv );
+	//fragColor = texture( iChannel3, uv );
 	//fragColor = clamp( fragColor, 0, 1 );
 	//fragColor = texture( iChannel0, uv );
 

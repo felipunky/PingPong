@@ -1,3 +1,5 @@
+#pragma comment( linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup" )
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #define STB_IMAGE_IMPLEMENTATION
@@ -7,41 +9,33 @@
 #include "wtypes.h"
 #include <time.h>
 #include <iostream>
+#include <string>
 
 // FPS, iFrame counter.
-int initialTime = time(NULL), finalTime, frameCount, frames;
+int initialTime = time( NULL ), finalTime, frameCount, frames, FPS;
+const char* title;
+// Mouse.
+static double xPre, yPre;
+double xPos, yPos, xDif, yDif, vX, vY;
 // timing
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+
+// Our image size.
+const unsigned int SRC_WIDTH = 1200;
+const unsigned int SRC_HEIGHT = 800;
+
+int WIDTH, HEIGHT;
 
 // We need this to be able to resize our window.
 void framebuffer_size_callback( GLFWwindow* window, int width, int height );
 // We need this to be able to close our window when pressing a key.
 void processInput( GLFWwindow* window );
 // We need this to be able to call our load image function from below main.
-unsigned int loadTexture(const char *path);
+unsigned int loadTexture( const char *path );
 
 // Our mouse button click flag.
 float pressed = 0.0, right_pressed = 0.0;
-
-// Our image size.
-int WIDTH;
-int HEIGHT;
-
-// Get the horizontal and vertical screen sizes in pixel
-void GetDesktopResolution(int& horizontal, int& vertical)
-{
-	RECT desktop;
-	// Get a handle to the desktop window
-	const HWND hDesktop = GetDesktopWindow();
-	// Get the size of screen to the variable desktop
-	GetWindowRect(hDesktop, &desktop);
-	// The top left corner will have coordinates (0,0)
-	// and the bottom right corner will have coordinates
-	// (horizontal, vertical)
-	horizontal = desktop.right;
-	vertical = desktop.bottom;
-}
 
 // Our mouse.
 static void cursorPositionCallback( GLFWwindow *window, double xPos, double yPos );
@@ -50,11 +44,6 @@ static void mouseButtonCallback( GLFWwindow *window, int button, int action, int
 
 int main() 
 {
-	
-	// Get our window size according to each screen we run our program on.
-	//GetDesktopResolution( WIDTH, HEIGHT );
-
-	WIDTH = 1200, HEIGHT = 800;
 
 	// We initialize glfw and specify which versions of OpenGL to target.
 	glfwInit();
@@ -63,8 +52,8 @@ int main()
 	glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
 
 	// Our window object.
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "NavierStokeish", NULL, NULL);
-	if (window == NULL)
+	GLFWwindow* window = glfwCreateWindow( SRC_WIDTH, SRC_HEIGHT, "NavierStokeish", NULL, NULL );
+	if ( window == NULL )
 	{
 
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -72,8 +61,9 @@ int main()
 		return -1;
 
 	}
-	glfwMakeContextCurrent(window);
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+	glfwMakeContextCurrent( window );
+	glfwSetFramebufferSizeCallback( window, framebuffer_size_callback );
 
 	// Initialize the mouse.
 	glfwSetCursorPosCallback( window, cursorPositionCallback );
@@ -95,16 +85,17 @@ int main()
 	Shader BufferB( "vertex.glsl", "BufferB.glsl" );
 	Shader BufferC( "vertex.glsl", "BufferC.glsl" );
 	Shader BufferD( "BufferDVertex.glsl", "BufferD.glsl" );
-
+	
+	// This is for our screen quad.
 	// We define the points in space that we want to render.
 	float vertices[] =
 	{
 		
-		// Positions.            // FragCoord
-		-1.0f,  -1.0f, 0.0f,     //-1.0f,  1.0f,
-		-1.0f,   1.0f, 0.0f,     //1.0f,  1.0f,
-		 1.0f,   1.0f, 0.0f,     //1.0f, -1.0f,
-		 1.0f,  -1.0f, 0.0f      //-1.0f, -1.0f 
+		// Positions.            // TextureCoordinates.
+		-1.0f,  -1.0f, 0.0f,     -1.0f,  1.0f,
+		-1.0f,   1.0f, 0.0f,      1.0f,  1.0f,
+		 1.0f,   1.0f, 0.0f,      1.0f, -1.0f,
+		 1.0f,  -1.0f, 0.0f,     -1.0f, -1.0f 
 
 	};
 
@@ -137,6 +128,61 @@ int main()
 	glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( indices ), indices, GL_STATIC_DRAW );
 
 	// Set our vertex attributes pointers.
+	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof( float ), ( void* ) 0 );
+	glEnableVertexAttribArray( 0 );
+	// Set our texture coordinates attributes.
+	glVertexAttribPointer( 2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof( float ), ( void* )( 6 * sizeof( float ) ) );
+	glEnableVertexAttribArray( 2 );
+
+	// Unbind the VBO.
+	glBindBuffer( GL_ARRAY_BUFFER, 0 );
+
+	// Unbind the VAO.
+	glBindVertexArray( 0 );
+
+	// This is for our particles.
+	// We define the points in space that we want to render.
+	float verticesParticles[] =
+	{
+
+		// Positions.            
+		-1.0f,  -1.0f, 0.0f,     
+		//-1.0f,   1.0f, 0.0f, 
+		 0.0f,   0.0f, 0.0f,
+		 1.0f,   1.0f, 0.0f,      
+		 1.0f,  -1.0f, 0.0f
+
+	};
+
+	// We define our Element Buffer Object indices so that if we have vertices that overlap,
+	// we dont have to render twice, 50% overhead.
+	unsigned int indicesParticles[] =
+	{
+
+		0, 1, 3,
+		1, 2, 3
+
+	};
+
+	// We create a buffer ID so that we can later assign it to our buffers.
+	unsigned int VBOO, VAOO, EBOO;
+	glGenVertexArrays( 1, &VAOO );
+	glGenBuffers( 1, &VBOO );
+	glGenBuffers( 1, &EBOO );
+
+	// Bind Vertex Array Object.
+	glBindVertexArray( VAOO );
+
+	// Copy our vertices array in a buffer for OpenGL to use.
+	// We assign our buffer ID to our new buffer and we overload it with our triangles array.
+	glBindBuffer( GL_ARRAY_BUFFER, VBOO );
+	glBufferData( GL_ARRAY_BUFFER, sizeof( verticesParticles ), verticesParticles, GL_DYNAMIC_DRAW );
+
+	// Copy our indices in an array for OpenGL to use.
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, EBOO );
+	glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( indicesParticles ), indicesParticles, GL_DYNAMIC_DRAW );
+
+	// Set our vertex attributes pointers.
 	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof( float ), ( void* ) 0 );
 	glEnableVertexAttribArray( 0 );
 
@@ -161,20 +207,23 @@ int main()
 	BufferC.setInt( "iChannel0", 0 );
 	BufferC.setInt( "iChannel1", 1 );
 
+	BufferD.use();
+	BufferD.setInt( "iChannel0", 0 );
+	BufferD.setInt( "iChannel1", 1 );
+
 	Image.use();
 	Image.setInt( "iChannel0", 0 );
 	Image.setInt( "iChannel1", 1 );
 	Image.setInt( "iChannel2", 2 );
-
-	BufferD.use();
-	BufferD.setInt( "iChannel0", 0 );
-	BufferD.setInt( "iChannel1", 1 );
+	Image.setInt( "iChannel3", 3 );
 
 	// BufferA Ping Pong FrameBuffers
 	// Framebuffer configuration.
 	unsigned int frameBuffer;
 	glGenFramebuffers( 1, &frameBuffer );
 	glBindFramebuffer( GL_FRAMEBUFFER, frameBuffer );
+
+	glfwGetFramebufferSize( window, &WIDTH, &HEIGHT );
 
 	// Create a colour attachment texture.
 	unsigned int textureColourBuffer;
@@ -194,8 +243,8 @@ int main()
 	// BufferA frameBuffer configuration.
 	// Framebuffer configuration.
 	unsigned int frameBufferOne;
-	glGenFramebuffers(1, &frameBufferOne);
-	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferOne);
+	glGenFramebuffers( 1, &frameBufferOne );
+	glBindFramebuffer( GL_FRAMEBUFFER, frameBufferOne );
 
 	// Create a colour attachment texture.
 	unsigned int textureColourBufferOne;
@@ -342,6 +391,11 @@ int main()
 	while( !glfwWindowShouldClose( window ) )
 	{
 	
+
+		glfwGetFramebufferSize( window, &WIDTH, &HEIGHT );
+
+		//glfwGetCursorPos( window, &xPos, &yPos );
+
 		// Input.
 		processInput( window );
 
@@ -365,8 +419,6 @@ int main()
 		// Set the iResolution uniform.
 		BufferA.setVec2( "iResolution", WIDTH, HEIGHT );
 		// Input iMouse.
-		static double xPre, yPre;
-		double xPos, yPos, xDif, yDif, vX, vY;
 		glfwGetCursorPos( window, &xPos, &yPos );
 		yPos = HEIGHT - yPos;
 		xDif = xPos - xPre;
@@ -393,6 +445,7 @@ int main()
 
 		}
 
+		// BufferA
 		BufferA.setVec3( "iMouse", xPos, yPos, pressed );
 		BufferA.setVec2( "iVel", vX, vY );
 
@@ -465,7 +518,34 @@ int main()
 		glClearColor( 1.0f, 1.0f, 1.0f, 1.0f );
 		glClear( GL_COLOR_BUFFER_BIT );
 
-		glBindFramebuffer(GL_FRAMEBUFFER, even ? frameBufferSix : frameBufferSeven);
+		// BufferD
+		glBindFramebuffer( GL_FRAMEBUFFER, even ? textureColourBufferSeven : textureColourBufferSix );
+		glClearColor( 0.2f, 0.3f, 0.1f, 1.0f );
+		glClear( GL_COLOR_BUFFER_BIT );
+
+		BufferD.use();
+		//Set the iTimeDelta uniform.
+		BufferD.setFloat( "iTimeDelta", deltaTime );
+		// Set the iTime uniform.
+		BufferD.setFloat( "iTime", timeValue );
+		// Set the iResolution uniform.
+		BufferD.setVec2( "iResolution", WIDTH, HEIGHT );
+		// Input iMouse.
+		BufferD.setVec3( "iMouse", xPos, yPos, pressed );
+
+		glBindVertexArray( VAOO );
+		glActiveTexture( GL_TEXTURE0 );
+		glBindTexture( GL_TEXTURE_2D, even ? textureColourBufferSeven : textureColourBufferSix );
+		glActiveTexture( GL_TEXTURE1 );
+		glBindTexture( GL_TEXTURE_2D, even ? textureColourBufferOne : textureColourBuffer );
+		glDrawElements( GL_POINTS, 6, GL_UNSIGNED_INT, 0 );
+		glEnable( GL_PROGRAM_POINT_SIZE );
+		glBindVertexArray( 0 );
+
+		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
+
+		glClearColor( 1.0f, 1.0f, 1.0f, 1.0f );
+		glClear( GL_COLOR_BUFFER_BIT );
 
 		// Our last stage for our colour Navier-Stokes and mixing it with the Wave Equation.
 		Image.use();
@@ -480,36 +560,13 @@ int main()
 		glBindTexture( GL_TEXTURE_2D, even ? textureColourBufferThree : textureColourBufferTwo );
 		glActiveTexture( GL_TEXTURE2 );
 		glBindTexture( GL_TEXTURE_2D, even ? textureColourBufferFive : textureColourBufferFour );
+		glActiveTexture( GL_TEXTURE3 );
+		glBindTexture( GL_TEXTURE_2D, even ? textureColourBufferSeven : textureColourBufferSix );
 		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
-		glBindVertexArray(0);
+		
+		glBindVertexArray( 0 );
 
 		glBindFramebuffer( GL_FRAMEBUFFER, 0 );
-
-		glClearColor( 1.0f, 1.0f, 1.0f, 1.0f );
-		glClear( GL_COLOR_BUFFER_BIT) ;
-
-		// BufferD
-		//glBindFramebuffer( GL_FRAMEBUFFER, even ? frameBufferSix : frameBufferSeven );
-
-		glClearColor( 0.2f, 0.3f, 0.1f, 1.0f );
-		glClear( GL_COLOR_BUFFER_BIT );
-
-		BufferD.use();
-		//Set the iTimeDelta uniform.
-		BufferD.setFloat( "iTimeDelta", deltaTime );
-		// Set the iTime uniform.
-		BufferD.setFloat( "iTime", timeValue );
-		// Set the iResolution uniform.
-		BufferD.setVec2( "iResolution", WIDTH, HEIGHT );
-		// Input iMouse.
-		BufferD.setVec3( "iMouse", xPos, yPos, pressed );
-
-		glBindVertexArray( VAO );
-		glActiveTexture( GL_TEXTURE0 );
-		glBindTexture( GL_TEXTURE_2D, even ? textureColourBufferSeven : textureColourBufferSix );
-		//glActiveTexture( GL_TEXTURE1 );
-		//glBindTexture( GL_TEXTURE_2D, even ? textureColourBufferThree : textureColourBufferTwo );
-		glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0 );
 
 		glfwSwapBuffers( window );
 		glfwPollEvents();
@@ -525,16 +582,21 @@ int main()
 		if( finalTime - initialTime > 0 )
 		{
 		
-			std::cout << "FPS : " << frameCount / ( finalTime - initialTime ) << std::endl;
+			FPS = frameCount / ( finalTime - initialTime );
+			std::stringstream title;
+			title << "Navier-Stokes Simulation, FPS : " << FPS;
 			frameCount = 0;
 			initialTime = finalTime;
 
+			glfwSetWindowTitle( window, title.str().c_str() );
+
 		}
-	
+
 	}
 
 	// De-allocate all resources once they've outlived their purpose.
 	glDeleteVertexArrays( 1, &VAO );
+	glDeleteVertexArrays( 1, &VAOO );
 	glDeleteBuffers( 1, &VBO );
 	glDeleteBuffers( 1, &EBO );
 
@@ -545,15 +607,15 @@ int main()
 void processInput( GLFWwindow *window )
 {
 
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	if ( glfwGetKey( window, GLFW_KEY_ESCAPE) == GLFW_PRESS )
 		glfwSetWindowShouldClose( window, true );
 
 }
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void framebuffer_size_callback( GLFWwindow* window, int width, int height )
 {
 
-	glViewport(0, 0, width, height);
+	glViewport( 0, 0, width, height );
 
 }
 

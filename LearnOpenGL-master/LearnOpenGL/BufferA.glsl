@@ -16,7 +16,7 @@ const float siz = 0.2;
 const float di = 0.5;
 const float alp = ( dx * dx ) / dt;
 const float rbe = 1.0 / ( 4.0 + alp );
-const float vo = 12.0;
+const float vo = 102.0;
 const int FIELD = 1;
 const float vf = 0.005;//0.005;
 const float mul = 20.0;
@@ -54,10 +54,10 @@ float cur( vec2 uv )
     float x = uv.x;
     float y = uv.y;
     
-    float top = texture( iChannel1, vec2( x, y + ypi ) ).r;
-    float lef = texture( iChannel1, vec2( x - xpi, y ) ).r;
-    float rig = texture( iChannel1, vec2( x + xpi, y ) ).r;
-    float dow = texture( iChannel1, vec2( x, y - ypi ) ).r;
+    float top = texture( iChannel0, vec2( x, y + ypi ) ).r;
+    float lef = texture( iChannel0, vec2( x - xpi, y ) ).r;
+    float rig = texture( iChannel0, vec2( x + xpi, y ) ).r;
+    float dow = texture( iChannel0, vec2( x, y - ypi ) ).r;
     
     float dY = ( top - dow ) * 0.5;
     float dX = ( rig - lef ) * 0.5;
@@ -145,11 +145,11 @@ void main()
 
 	float ra = siz * mul;
 
-	if( iMouse.z > 0.5 && length( p - mou ) < ra && fO > 10.0 ) 
+	if( iMouse.z > 0.5 && smoothstep( ra, ra - 0.05, length( p - mou ) ) > 0.0 ) 
 	fld = 3.0 * vel;
 
     if( uv.y < 0.00 || uv.x < 0.00 || uv.x > 1.0 || uv.y > 1.0 ) o *= 0.0;
     
-    fragColor = vec4( col.r, fld, fO );
+    fragColor = vec4( 0, fld, fO );
     
 }
